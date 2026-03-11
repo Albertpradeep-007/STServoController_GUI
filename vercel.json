@@ -7,6 +7,14 @@
       "dest": "/STServoSDK.js"
     },
     {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
       "src": "/web-serial-demo.html",
       "dest": "/web-serial-demo.html"
     },
