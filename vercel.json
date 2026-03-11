@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend-build/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/app.py"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/frontend-build/static/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/frontend-build/favicon.ico"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/frontend-build/manifest.json"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend-build/index.html"
+    }
+  ]
+}
