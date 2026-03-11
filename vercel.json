@@ -1,6 +1,21 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "serial=(self)"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
   "routes": [
     {
       "src": "/STServoSDK.js",
@@ -15,12 +30,8 @@
       "dest": "/favicon.ico"
     },
     {
-      "src": "/web-serial-demo.html",
-      "dest": "/web-serial-demo.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/dashboard.html"
+      "dest": "/index.html"
     }
   ]
 }
