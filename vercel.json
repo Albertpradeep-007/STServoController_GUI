@@ -1,35 +1,21 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/app.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend-build/**",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/app.py"
+      "dest": "/backend/app.py"
     },
     {
-      "src": "/static/(.*)",
-      "dest": "/frontend-build/static/$1"
+      "src": "/STServoSDK.js",
+      "dest": "/STServoSDK.js"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/frontend-build/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/frontend-build/manifest.json"
+      "src": "/web-serial-demo.html",
+      "dest": "/web-serial-demo.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend-build/index.html"
+      "dest": "/dashboard.html"
     }
   ]
 }

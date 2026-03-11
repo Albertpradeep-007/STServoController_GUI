@@ -132,16 +132,41 @@ export class STServoSDK {
     }
 
     /**
-     * Read response packet from servo (with timeout)
+     * Internal: Read exactly N bytes from the stream with timeout
      */
-    async receivePacket(id, expectedLen, timeoutMs = 100) {
-        if (!this.port) return null;
+    async _readBytes(length, timeoutMs = 500) {
+        if (!this.port || !this.port.readable) return null;
+        
+        const startTime = Date.now();
+        let result = new Uint8Array(length);
+        let bytesRead = 0;
+        
+        const reader = this.port.readable.getReader();
+        try {
+            while (bytesRead < length && (Date.now() - startTime) < timeoutMs) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value) {
+                    for (let i = 0; i < value.length && bytesRead < length; i++) {
+                        result[bytesRead++] = value[i];
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
+        
+        return bytesRead === length ? result : null;
+    }
+
+    /**
+     * Read response packet from servo (with improved buffer management)
+     */
+    async receivePacket(id, timeoutMs = 200) {
+        if (!this.port || !this.port.readable) return null;
         
         const startTime = Date.now();
         let buffer = [];
-        
-        // This is a simplified read implementation. In a real app, 
-        // you'd use a persistent reader loop to avoid lock issues.
         const reader = this.port.readable.getReader();
         
         try {
@@ -151,29 +176,70 @@ export class STServoSDK {
                 if (value) {
                     for (let b of value) buffer.push(b);
                     
-                    // Look for header 0xFF 0xFF
-                    if (buffer.length >= 6) {
-                        const headerIdx = buffer.findIndex((b, i) => b === 0xFF && buffer[i+1] === 0xFF);
-                        if (headerIdx !== -1) {
-                            const pktStart = buffer.slice(headerIdx);
-                            const pktLen = pktStart[3];
-                            const totalExpected = pktLen + 4;
-                            
-                            if (pktStart.length >= totalExpected) {
-                                reader.releaseLock();
-                                return pktStart.slice(0, totalExpected);
+                    // Header detection
+                    const headerIdx = buffer.findIndex((b, i) => b === 0xFF && buffer[i+1] === 0xFF);
+                    if (headerIdx !== -1 && buffer.length >= headerIdx + 4) {
+                        const pktId = buffer[headerIdx + 2];
+                        const pktLen = buffer[headerIdx + 3];
+                        const totalExpected = pktLen + 4;
+                        
+                        if (buffer.length >= headerIdx + totalExpected) {
+                            const pkt = buffer.slice(headerIdx, headerIdx + totalExpected);
+                            // Verify ID (unless it's a broadcast or we don't care)
+                            if (id !== undefined && pktId !== id) {
+                                buffer.splice(0, headerIdx + 1); // Skip this header and keep looking
+                                continue;
                             }
+                            return pkt;
                         }
                     }
                 }
             }
         } finally {
-            if (!reader.closed) reader.releaseLock();
+            reader.releaseLock();
         }
         return null;
     }
 
     // --- High Level API Methods ---
+
+    /**
+     * Discover servos in a range
+     */
+    async discover(startId = 0, endId = 20) {
+        const found = [];
+        for (let id = startId; id <= endId; id++) {
+            if (await this.ping(id)) {
+                found.push(id);
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Get full telemetry for a servo
+     */
+    async getTelemetry(id) {
+        // Read 15 bytes starting from Present Position L (Address 56)
+        // Includes: Pos(2), Spd(2), Load(2), Volt(1), Temp(1), ..., Current(2)
+        await this.sendPacket(id, STServoDef.INST_READ, [STSAddress.PRESENT_POSITION_L, 15]);
+        const res = await this.receivePacket(id);
+        
+        if (res && res.length >= 20) { // Header(2), ID(1), Len(1), Err(1), Params(15), Checksum(1)
+            const params = res.slice(5, 20);
+            return {
+                id: id,
+                position: this._makeWord(params[0], params[1]),
+                speed: this._makeWord(params[2], params[3]),
+                load: this._makeWord(params[4], params[5]),
+                voltage: params[6] / 10.0,
+                temperature: params[7],
+                moving: params[10],
+                current: this._makeWord(params[13], params[14])
+            };
+        }
+        return null;
+    }
 
     /**
      * Ping a servo
