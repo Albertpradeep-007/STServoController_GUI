@@ -1,6 +1,7 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "public": true,
   "headers": [
     {
       "source": "/(.*)",
@@ -27,19 +28,19 @@
   "rewrites": [
     {
       "source": "/manifest.json",
-      "destination": "/manifest.json"
+      "destination": "/public/manifest.json"
     },
     {
       "source": "/STServoSDK.js",
-      "destination": "/STServoSDK.js"
+      "destination": "/public/STServoSDK.js"
     },
     {
       "source": "/dashboard",
-      "destination": "/dashboard.html"
+      "destination": "/public/dashboard.html"
     },
     {
-      "source": "/((?!api/|.*\\..*).*)",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "destination": "/public/index.html"
     }
   ]
 }
