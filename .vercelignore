@@ -1,0 +1,6 @@
+backend/
+STservo_sdk/
+venv/
+*.py
+requirements.txt
+start-servo-controller*

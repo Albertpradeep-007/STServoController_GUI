@@ -1,10 +1,7 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/app.py"
-    },
     {
       "src": "/STServoSDK.js",
       "dest": "/STServoSDK.js"
