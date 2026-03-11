@@ -12,26 +12,34 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
         }
       ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/STServoSDK.js",
-      "dest": "/STServoSDK.js"
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
     },
     {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
+      "source": "/STServoSDK.js",
+      "destination": "/STServoSDK.js"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!api/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }

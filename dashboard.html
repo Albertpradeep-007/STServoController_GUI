@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.ico">
     <style>
         :root {
             --brand-primary: #00d2ff;
@@ -208,6 +210,18 @@
     </footer>
 
     <script type="module">
+        // Clear old service workers from previous React deployment
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.unregister().then(() => {
+                        console.log('Old Service Worker unregistered');
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
         import { STServoSDK } from './STServoSDK.js';
 
         const sdk = new STServoSDK();
